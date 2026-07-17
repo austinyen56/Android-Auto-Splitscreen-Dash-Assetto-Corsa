@@ -10,10 +10,9 @@ local function formatTime(value)
     )
 end
 
--- Uses the same blurred, cover-derived background system
--- as the original full-screen Music app.
+-- This extracts an accent color from the album cover.
 local background = touchscreen.blurredBackgroundImage(
-    rgbm(33 / 255, 212 / 255, 94 / 255, 1)
+    rgbm(0.18, 0.18, 0.18, 1)
 )
 
 local function updateCover()
@@ -30,168 +29,426 @@ ac.onAlbumCoverUpdate(updateCover)
 return function(dt, size)
     local playing = ac.currentlyPlaying()
 
-    -- Draw blurred background derived from album art.
-    background.draw(dt)
+    ----------------------------------------------------------------
+    -- Responsive scale
+    ----------------------------------------------------------------
 
-    -- Dark overlay for text readability.
+    local referenceWidth = 350
+    local referenceHeight = 500
+
+    local scale = math.min(
+        size.x / referenceWidth,
+        size.y / referenceHeight
+    )
+
+    scale = math.clamp(scale, 0.60, 1.20)
+
+    local function px(value)
+        return math.floor(value * scale + 0.5)
+    end
+
+    ----------------------------------------------------------------
+    -- Full-panel album-cover background
+    ----------------------------------------------------------------
+
+    ui.setCursor(vec2(0, 0))
+
+    if playing.hasCover then
+        -- Reduce opacity so text and controls remain readable.
+        ui.pushStyleVarAlpha(0.35)
+
+        ui.image(
+            playing,
+            size,
+            ui.ImageFit.Cover
+        )
+
+        ui.popStyleVar()
+    else
+        background.draw(dt)
+    end
+
+    ----------------------------------------------------------------
+    -- Cover-derived color filter
+    ----------------------------------------------------------------
+
+    local accent = background.accent()
+
+    local average =
+        (accent.r + accent.g + accent.b) / 3
+
+    -- Slightly desaturate the sampled cover color.
+    local tintStrength = 0.58
+
+    local tintR = math.lerp(average, accent.r, tintStrength)
+    local tintG = math.lerp(average, accent.g, tintStrength)
+    local tintB = math.lerp(average, accent.b, tintStrength)
+
+    -- Cover-colored filter.
     ui.drawRectFilled(
         vec2(0, 0),
         size,
-        rgbm(0, 0, 0, 0.45)
+        rgbm(
+            tintR,
+            tintG,
+            tintB,
+            0.18
+        )
     )
 
-    local padding = 16
-    local contentOffsetY = 50
-
-    -- Album cover dimensions.
-    local coverSize = math.min(
-        size.x - padding * 2,
-        size.y * 0.42
+    -- Contrast layer: darkens shadows without strongly
+    -- changing the cover’s overall color.
+    ui.drawRectFilledMultiColor(
+        vec2(0, 0),
+        size,
+        rgbm(0, 0, 0, 0.04),
+        rgbm(0, 0, 0, 0.04),
+        rgbm(0, 0, 0, 0.30),
+        rgbm(0, 0, 0, 0.30)
     )
 
-    coverSize = math.max(coverSize, 80)
+    ----------------------------------------------------------------
+    -- Readability overlays
+    ----------------------------------------------------------------
 
-    -- Center album cover horizontally.
-    local coverX = (size.x - coverSize) / 2
-    local coverY = padding + contentOffsetY
+    -- Light overlay at the top, darker near the bottom.
+    ui.drawRectFilledMultiColor(
+        vec2(0, 0),
+        size,
+        rgbm(1, 1, 1, 0.05),
+        rgbm(1, 1, 1, 0.05),
+        rgbm(0, 0, 0, 0.55),
+        rgbm(0, 0, 0, 0.55)
+    )
 
-    ui.setCursor(vec2(coverX, coverY))
+    -- Additional subtle overall tint.
+    ui.drawRectFilled(
+        vec2(0, 0),
+        size,
+        rgbm(0, 0, 0, 0.08)
+    )
 
-    if playing.hasCover then
-        ui.image(
-            playing,
-            vec2(coverSize, coverSize),
-            ui.ImageFit.Fit
-        )
-    else
-        ui.drawRectFilled(
-            vec2(coverX, coverY),
-            vec2(
-                coverX + coverSize,
-                coverY + coverSize
-            ),
-            rgbm(0.1, 0.1, 0.1, 0.8),
-            12
-        )
+    ----------------------------------------------------------------
+    -- Top-left music icon
+    ----------------------------------------------------------------
 
-        ui.setCursor(vec2(coverX, coverY))
+    local topPadding = px(14)
+    local iconSize = px(24)
 
-        ui.textAligned(
-            'No cover',
-            0.5,
-            vec2(coverSize, coverSize)
-        )
-    end
+    ui.setCursor(vec2(
+        topPadding,
+        topPadding
+    ))
 
-    -- Text area below cover.
-    local textY = coverY + coverSize + 28
-    local textWidth = size.x - padding * 2
+    ui.drawCircleFilled(
+        vec2(
+            topPadding + iconSize / 2,
+            topPadding + iconSize / 2
+        ),
+        iconSize / 2,
+        rgbm(
+            accent.r,
+            accent.g,
+            accent.b,
+            0.95
+        ),
+        24
+    )
+
+    ui.setCursor(vec2(
+        topPadding,
+        topPadding
+    ))
+
+    ui.icon(
+        ui.Icons.Music,
+        vec2(iconSize, iconSize),
+        rgbm.colors.white
+    )
+
+    ----------------------------------------------------------------
+    -- Top-right menu dots
+    ----------------------------------------------------------------
+
+    -- local dotRadius = math.max(2, px(3))
+    -- local dotSpacing = px(12)
+
+    -- local dotY = topPadding + iconSize / 2
+    -- local dotStartX = size.x - topPadding - dotSpacing * 2
+
+    -- for i = 0, 2 do
+    --     ui.drawCircleFilled(
+    --         vec2(
+    --             dotStartX + dotSpacing * i,
+    --             dotY
+    --         ),
+    --         dotRadius,
+    --         rgbm(1, 1, 1, 0.85),
+    --         16
+    --     )
+    -- end
+
+    ----------------------------------------------------------------
+    -- Text layout
+    ----------------------------------------------------------------
+
+    local horizontalPadding = px(18)
+    local textWidth = size.x - horizontalPadding * 2
+
+    local buttonSize = px(48)
+    local controlsBottomPadding = px(30)
+
+    local controlsY =
+        size.y
+        - buttonSize
+        - controlsBottomPadding
+    ----------------------------------------------------------------
+    -- Responsive text stack
+    ----------------------------------------------------------------
 
     local title = playing.title ~= ''
         and playing.title
         or 'Nothing playing'
 
-    ui.setCursor(vec2(padding, textY))
+    -- Estimate whether the title needs two lines.
+    local estimatedCharacterWidth = px(11)
+
+    local estimatedTitleWidth =
+        #title * estimatedCharacterWidth
+
+    local wrapsTitle =
+        estimatedTitleWidth > textWidth
+
+    -- Dynamic title height.
+    local titleHeight =
+        wrapsTitle
+            and px(62)
+            or px(32)
+
+    local titleArtistGap = px(6)
+
+    local artistHeight =
+        playing.artist ~= ''
+            and px(24)
+            or 0
+
+    local artistProgressGap = px(12)
+
+    local progressBarHeight =
+        math.max(3, px(4))
+
+    local progressTimeGap = px(8)
+    local timeHeight = px(20)
+
+    -- Total height of the title/artist/progress/time group.
+    local textStackHeight =
+        titleHeight
+        + titleArtistGap
+        + artistHeight
+        + artistProgressGap
+        + progressBarHeight
+        + progressTimeGap
+        + timeHeight
+
+    -- Anchor the stack just above the playback controls.
+    local stackBottomGap = px(10)
+
+    local textStackBottom =
+        controlsY - stackBottomGap
+
+    local titleY =
+        textStackBottom - textStackHeight
+
+    ----------------------------------------------------------------
+    -- Title
+    ----------------------------------------------------------------
+
+    ui.setCursor(vec2(
+        horizontalPadding,
+        titleY
+    ))
 
     ui.dwriteTextAligned(
         title,
-        22,
-        ui.Alignment.Center,
+        px(23),
         ui.Alignment.Start,
-        vec2(textWidth, 54),
+        ui.Alignment.Start,
+        vec2(
+            textWidth,
+            titleHeight
+        ),
         true,
         rgbm.colors.white
     )
 
-    textY = textY + 60
+    ----------------------------------------------------------------
+    -- Artist
+    ----------------------------------------------------------------
+
+    local artistY =
+        titleY
+        + titleHeight
+        + titleArtistGap
 
     if playing.artist ~= '' then
-        ui.setCursor(vec2(padding, textY))
-
+        ui.setCursor(vec2(
+            horizontalPadding,
+            artistY
+        ))
+      
         ui.dwriteTextAligned(
             playing.artist,
-            16,
-            ui.Alignment.Center,
+            px(17),
             ui.Alignment.Start,
-            vec2(textWidth, 28),
+            ui.Alignment.Start,
+            vec2(
+                textWidth,
+                artistHeight
+            ),
             true,
-            rgbm(1, 1, 1, 0.72)
+            rgbm(1, 1, 1, 0.82)
         )
-
-        textY = textY + 26
     end
 
+    ----------------------------------------------------------------
     -- Progress bar
-    local progressBarWidth = textWidth * 0.82
-    local progressBarHeight = 4
-    local progressBarX = (size.x - progressBarWidth) / 2
-    local progressBarY = textY + 8
+    ----------------------------------------------------------------
+
+    local progressBarWidth =
+        textWidth * 0.82
+
+    local progressBarX =
+        (size.x - progressBarWidth) / 2
+
+    local progressBarY =
+        artistY
+        + artistHeight
+        + artistProgressGap
 
     local progress = 0
 
     if playing.trackPosition ~= -1
         and playing.trackDuration ~= -1
         and playing.trackDuration > 0 then
+        
         progress = math.saturateN(
-            playing.trackPosition / playing.trackDuration
+            playing.trackPosition
+                / playing.trackDuration
         )
     end
 
-    -- Background track
+    -- Unfilled bar.
     ui.drawRectFilled(
-        vec2(progressBarX, progressBarY),
+        vec2(
+            progressBarX,
+            progressBarY
+        ),
         vec2(
             progressBarX + progressBarWidth,
             progressBarY + progressBarHeight
         ),
-        rgbm(1, 1, 1, 0.18),
+        rgbm(1, 1, 1, 0.32),
         progressBarHeight / 2
     )
 
-    -- Filled progress
+    -- Filled bar.
     ui.drawRectFilled(
-        vec2(progressBarX, progressBarY),
         vec2(
-            progressBarX + progressBarWidth * progress,
-            progressBarY + progressBarHeight
+            progressBarX,
+            progressBarY
+        ),
+        vec2(
+            progressBarX
+                + progressBarWidth * progress,
+            progressBarY
+                + progressBarHeight
         ),
         rgbm.colors.white,
         progressBarHeight / 2
     )
 
-    textY = progressBarY + 12
+    ----------------------------------------------------------------
+    -- Time display
+    ----------------------------------------------------------------
 
     if playing.trackPosition ~= -1
         and playing.trackDuration ~= -1 then
-
-        ui.setCursor(vec2(padding, textY))
-
+        
+        local timeY =
+            progressBarY
+            + progressBarHeight
+            + progressTimeGap
+        
+        ui.setCursor(vec2(
+            progressBarX,
+            timeY
+        ))
+      
         ui.dwriteTextAligned(
-            string.format(
-                '%s / %s',
-                formatTime(playing.trackPosition),
-                formatTime(playing.trackDuration)
-            ),
-            14,
-            ui.Alignment.Center,
+            formatTime(playing.trackPosition),
+            px(12),
             ui.Alignment.Start,
-            vec2(textWidth, 24),
+            ui.Alignment.Start,
+            vec2(
+                progressBarWidth / 2,
+                timeHeight
+            ),
             false,
-            rgbm(1, 1, 1, 0.65)
+            rgbm(1, 1, 1, 0.72)
+        )
+      
+        ui.setCursor(vec2(
+            progressBarX
+                + progressBarWidth / 2,
+            timeY
+        ))
+      
+        ui.dwriteTextAligned(
+            formatTime(playing.trackDuration),
+            px(12),
+            ui.Alignment.End,
+            ui.Alignment.Start,
+            vec2(
+                progressBarWidth / 2,
+                timeHeight
+            ),
+            false,
+            rgbm(1, 1, 1, 0.72)
         )
     end
 
-    -- Playback controls.
-    local buttonSize = 48
-    local spacing = 50
+
+    ----------------------------------------------------------------
+    -- Playback controls
+    ----------------------------------------------------------------
+
+    local preferredSpacing = px(42)
     local controlsWidth =
-        buttonSize * 3 + spacing * 2
+        buttonSize * 3
+        + preferredSpacing * 2
+
+    -- Reduce spacing automatically on narrow panels.
+    local maximumControlsWidth =
+        size.x - horizontalPadding * 2
+
+    local spacing = preferredSpacing
+
+    if controlsWidth > maximumControlsWidth then
+        spacing = math.max(
+            px(8),
+            (
+                maximumControlsWidth
+                - buttonSize * 3
+            ) / 2
+        )
+
+        controlsWidth =
+            buttonSize * 3
+            + spacing * 2
+    end
 
     local controlsX =
         (size.x - controlsWidth) / 2
-
-    local controlsY =
-        size.y - buttonSize - 18
 
     ui.setCursor(vec2(
         controlsX,
@@ -207,11 +464,24 @@ return function(dt, size)
 
     ui.sameLine(0, spacing)
 
+    -- Rounded play/pause background.
+    local playButtonPosition =
+        ui.getCursor()
+
+    ui.drawRectFilled(
+        playButtonPosition,
+        playButtonPosition
+            + vec2(buttonSize, buttonSize),
+        rgbm(1, 1, 1, 0.90),
+        px(14)
+    )
+
     if touchscreen.iconButton(
         playing.isPlaying
             and ui.Icons.Pause
             or ui.Icons.Play,
-        buttonSize
+        buttonSize,
+        rgbm(0.08, 0.08, 0.08, 1)
     ) then
         ac.mediaPlayPause()
     end
