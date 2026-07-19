@@ -1,9 +1,16 @@
-# Android Auto Splitscreen Dashboard for Assetto Corsa 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/1061cde9-982c-430f-a102-1d02f4212a08" alt="icon" width="50" height="50">
+</p>
 
-![Lua](https://img.shields.io/badge/Assetto%20Corsa-Lua-blue)
-
-A more modern Android Auto dashboard for Assetto Corsa featuring a split-screen dashboard with navigation and a redesigned music player.
-
+<h1 align="center">Android Auto Splitscreen Dashboard for Assetto Corsa</h1>
+<p align="center">
+  A modern Android Auto dashboard for Assetto Corsa with integrated navigation and a redesigned music player.
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Assetto%20Corsa-CSP-orange" alt="Assetto Corsa CSP">
+  <img src="https://img.shields.io/badge/Language-Lua-blue" alt="Lua">
+  <img src="https://img.shields.io/badge/UI-Android%20Auto-green" alt="Android Auto">
+</p>
 ## Preview
 
 
