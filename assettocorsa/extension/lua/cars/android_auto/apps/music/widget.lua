@@ -26,8 +26,39 @@ end
 updateCover()
 ac.onAlbumCoverUpdate(updateCover)
 
+local volumeBarFade = 0
+local volumeValue = 0.7
+
+local playClickCount = 0
+local playClickTimer = 0
+
+local easterEggNotificationTimer = 0
+
 return function(dt, size)
     local playing = ac.currentlyPlaying()
+    
+    ----------------------------------------------------------------
+    -- Play/pause Easter egg timers
+    ----------------------------------------------------------------
+
+    if playClickTimer > 0 then
+        playClickTimer = playClickTimer - dt
+
+        if playClickTimer <= 0 then
+            playClickTimer = 0
+            playClickCount = 0
+        end
+    end
+
+    if easterEggNotificationTimer > 0 then
+        easterEggNotificationTimer =
+            easterEggNotificationTimer - dt
+
+        if easterEggNotificationTimer <= 0 then
+            easterEggNotificationTimer = 0
+            system.setNotification(nil)
+        end
+    end
 
     ----------------------------------------------------------------
     -- Responsive scale
@@ -208,7 +239,7 @@ return function(dt, size)
 
     local title = playing.title ~= ''
         and playing.title
-        or 'Nothing playing'
+        or 'Nothing Playing'
 
     -- Estimate whether the title needs two lines.
     local estimatedCharacterWidth = px(11)
@@ -422,7 +453,7 @@ return function(dt, size)
     -- Playback controls
     ----------------------------------------------------------------
 
-    local preferredSpacing = px(42)
+    local preferredSpacing = px(90)
     local controlsWidth =
         buttonSize * 3
         + preferredSpacing * 2
@@ -467,13 +498,22 @@ return function(dt, size)
     -- Rounded play/pause background.
     local playButtonPosition =
         ui.getCursor()
+    
+    local playBorderPadding = px(9)
 
     ui.drawRectFilled(
-        playButtonPosition,
+        playButtonPosition - vec2(
+            playBorderPadding,
+            playBorderPadding
+        ),
         playButtonPosition
-            + vec2(buttonSize, buttonSize),
+            + vec2(buttonSize, buttonSize)
+            + vec2(
+                playBorderPadding,
+                playBorderPadding
+            ),
         rgbm(1, 1, 1, 0.90),
-        px(14)
+        px(17)
     )
 
     if touchscreen.iconButton(
@@ -484,6 +524,29 @@ return function(dt, size)
         rgbm(0.08, 0.08, 0.08, 1)
     ) then
         ac.mediaPlayPause()
+
+        ------------------------------------------------------------
+        -- Easter egg: press play/pause 10 times rapidly
+        ------------------------------------------------------------
+
+        playClickCount = playClickCount + 1
+
+        -- Each press must happen within 0.8 seconds
+        -- of the previous press.
+        playClickTimer = 0.8
+
+        if playClickCount >= 10 then
+            system.setNotification(
+                system.appIcon(),
+                'Secret Discovered: Play Button Spammer! ▶',
+                '"If you happen to see this, thanks for testing my code!" - Austin'
+            )
+
+            easterEggNotificationTimer = 8
+
+            playClickCount = 0
+            playClickTimer = 0
+        end
     end
 
     ui.sameLine(0, spacing)
@@ -494,4 +557,13 @@ return function(dt, size)
     ) then
         ac.mediaNextTrack()
     end
+    ----------------------------------------------------------------
+    -- Hidden right-side volume control
+    ----------------------------------------------------------------
+
+    -- touchscreen.volumeControl(
+    --     vec2(0, 0),
+    --     size.x,
+    --     size.y
+    -- )
 end
