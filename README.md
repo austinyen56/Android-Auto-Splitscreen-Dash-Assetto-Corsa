@@ -10,7 +10,7 @@ A more modern Android Auto dashboard for Assetto Corsa featuring a split-screen 
 ![Dashboard](banner.png)
 
 ### Demo Video
-![](demo_video.mp4)
+![demo_video.mp4](https://github.com/austinyen56/Android-Auto-Splitscreen-Dash-Assetto-Corsa/blob/main/demo_video.mp4)
 
 
 # Installation
