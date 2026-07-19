@@ -11,8 +11,8 @@
   <img src="https://img.shields.io/badge/Language-Lua-blue" alt="Lua">
   <img src="https://img.shields.io/badge/UI-Android%20Auto-green" alt="Android Auto">
 </p>
-## Preview
 
+## Preview
 
 ![Dashboard](banner.png)
 
