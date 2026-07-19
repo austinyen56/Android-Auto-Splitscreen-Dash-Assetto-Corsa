@@ -9,10 +9,6 @@ A more modern Android Auto dashboard for Assetto Corsa featuring a split-screen 
 
 ![Dashboard](banner.png)
 
-### Demo Video
-![demo_video.mp4](https://github.com/austinyen56/Android-Auto-Splitscreen-Dash-Assetto-Corsa/blob/main/demo_video.mp4)
-
-
 # Installation
 
 1. Install the latest version of **Custom Shaders Patch**.
@@ -51,3 +47,10 @@ These limitations are imposed by the current Custom Shaders Patch API:
 
 - Only one Android Auto app can be active at a time. The dashboard works around this by embedding the Navigator inside a custom dashboard app.
 - External media player volume cannot be controlled because the CSP API does not provide access to system media volume.
+
+### Demo Video
+
+
+https://github.com/user-attachments/assets/da3fe0de-f2e4-4b17-883f-7175f1ea025b
+
+
