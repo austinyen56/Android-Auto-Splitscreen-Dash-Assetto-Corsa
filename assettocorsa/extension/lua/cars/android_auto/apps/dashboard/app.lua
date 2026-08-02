@@ -33,7 +33,6 @@ local function loadWidget(app)
     return widget
 end
 
-
 local function maskRoundedCorners(position, size, radius, color)
     radius = math.floor(math.min(radius, size.x / 2, size.y / 2))
 
@@ -71,20 +70,9 @@ end
 local function drawWidgetPanel(app, panelID, position, size, dt, cornerRadius)
     ui.setCursor(position)
 
-    ui.childWindow(
-        panelID,
-        size,
-        false,
-        bit.bor(
-            ui.WindowFlags.NoScrollbar,
-            ui.WindowFlags.NoScrollWithMouse
-        ),
+    ui.childWindow(panelID, size, false, bit.bor(ui.WindowFlags.NoScrollbar, ui.WindowFlags.NoScrollWithMouse),
         function()
-            ui.drawRectFilled(
-                vec2(0, 0),
-                ui.windowSize(),
-                system.bgColor
-            )
+            ui.drawRectFilled(vec2(0, 0), ui.windowSize(), system.bgColor)
 
             local widget = loadWidget(app)
 
@@ -93,33 +81,20 @@ local function drawWidgetPanel(app, panelID, position, size, dt, cornerRadius)
             else
                 ui.setCursor(vec2(20, 20))
 
-                ui.text(
-                    app
-                        and 'No widget available for ' .. app.name
-                        or 'App unavailable'
-                )
+                ui.text(app and 'No widget available for ' .. app.name or 'App unavailable')
             end
 
             -- This must be inside the child window.
             if cornerRadius and cornerRadius > 0 then
-                maskRoundedCorners(
-                    vec2(0, 0),
-                    ui.windowSize(),
-                    cornerRadius,
-                    rgbm.colors.black
-                )
+                maskRoundedCorners(vec2(0, 0), ui.windowSize(), cornerRadius, rgbm.colors.black)
             end
-        end
-    )
+        end)
 end
-
-
 
 return function(dt)
 
     local panelRadius = 18
     local maskColor = rgbm.colors.black
-
 
     local size = ui.windowSize()
 
@@ -146,16 +121,8 @@ return function(dt)
         touchscreen.forceAwake()
         -- ui.text("Maps detected!")
     else
-    drawWidgetPanel(
-        leftApp,
-        '__dashboard_left',
-        vec2(0, 0),
-        leftSize,
-        dt,
-        panelRadius
-        )
+        drawWidgetPanel(leftApp, '__dashboard_left', vec2(0, 0), leftSize, dt, panelRadius)
     end
-
 
     -- Divider
     ui.drawRectFilled(vec2(leftWidth, 0), vec2(leftWidth + dividerWidth, size.y), rgbm.colors.black)
@@ -165,13 +132,7 @@ return function(dt)
     drawWidgetPanel(rightApp, '__dashboard_right', rightPosition, rightSize, dt, panelRadius)
 
     -- Apply rounded visual clipping after both panels are rendered.
-    maskRoundedCorners(
-      vec2(0, 0),
-      leftSize,
-      panelRadius,
-      maskColor
-    )
+    maskRoundedCorners(vec2(0, 0), leftSize, panelRadius, maskColor)
 
 end
-
 

@@ -18,7 +18,7 @@
 
 # Installation
 
-1. Install the latest version of **Custom Shaders Patch**.
+1. Install the latest version of CSP.
 2. Extract the files manually and copy it into `assettocorsa/extension/`
 
 3. Choose a car with Android Auto and you should see the Dashboard icon.
