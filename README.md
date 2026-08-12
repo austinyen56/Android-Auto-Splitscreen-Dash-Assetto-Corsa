@@ -7,7 +7,7 @@
   A modern Android Auto dashboard for Assetto Corsa with integrated navigation and a redesigned music player.
 </p>
 <p align="center">
-  <img src="https://img.shields.io/badge/Assetto%20Corsa-CSP-orange" alt="Assetto Corsa CSP">
+  <img src="https://img.shields.io/badge/Assetto%20Corsa-CSP%200.3.0.528p-orange" alt="Assetto Corsa CSP">
   <img src="https://img.shields.io/badge/Language-Lua-blue" alt="Lua">
   <img src="https://img.shields.io/badge/UI-Android%20Auto-green" alt="Android Auto">
 </p>
@@ -18,7 +18,7 @@
 
 # Installation
 
-1. Install the latest version of CSP.
+1. Install the latest version of CSP. Must re-install after each CSP or CM update (More info below)
 2. Extract the files manually and copy it into `assettocorsa/extension/`
 
 3. Choose a car with Android Auto and you should see the Dashboard icon.
@@ -39,6 +39,9 @@
 - Hidden Easter egg 🤔
 
 ## Known Issues
+- **App doesn't work after CSP/ Content Manager update**
+  - The mod may need to be re-downloaded/reinstalled after each CSP or Content Manager update, as updates can overwrite the modified Android Auto system files.
+  - **Older CSP versions:** To use this app without updating CSP, follow the steps in `legacy_csp_installation.md`.
 
 - **Navigator/ Maps is fixed-size**
   - The navigation view is rendered as a separate display, so it cannot currently be fully resized or dynamically scaled within the dashboard.

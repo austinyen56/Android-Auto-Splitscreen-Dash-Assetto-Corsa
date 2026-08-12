@@ -787,7 +787,6 @@ function system.addApp(appID, appFolder)
 
         main = io.fileExists(appFolderPath .. '/app.lua') and appFolder .. '/app' or nil,
 
-        -- Our custom dashboard widget support
         widget = io.fileExists(appFolderPath .. '/widget.lua') and appFolder .. '/widget' or nil,
 
         status = io.fileExists(appFolderPath .. '/status.lua') and appFolder .. '/status' or nil,
