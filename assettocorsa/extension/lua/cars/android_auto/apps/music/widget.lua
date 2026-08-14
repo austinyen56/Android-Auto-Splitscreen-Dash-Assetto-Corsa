@@ -11,6 +11,7 @@ local background = touchscreen.blurredBackgroundImage(rgbm(0.18, 0.18, 0.18, 1))
 
 local function updateCover()
     local playing = ac.currentlyPlaying()
+    -- print("Playing from ", playing.sourceID)
 
     background.update(playing.hasCover and playing or nil)
 end
@@ -70,7 +71,25 @@ return function(dt, size)
         -- Reduce opacity so text and controls remain readable.
         ui.pushStyleVarAlpha(0.35)
 
-        ui.image(playing, size, ui.ImageFit.Cover)
+        local coverUV1 = vec2(0, 0)
+        local coverUV2 = vec2(1, 1)
+
+        if playing.sourceID == 'SPOTIFY' then
+            -- (left, top)
+            -- (right, bottom)
+            coverUV1 = vec2(0.11, 0)
+            coverUV2 = vec2(0.9, 0.78)
+        end
+
+        ui.image(
+            playing,
+            size,
+            rgbm.colors.white,
+            nil,
+            coverUV1,
+            coverUV2,
+            ui.ImageFit.Cover
+        )
 
         ui.popStyleVar()
     else
@@ -175,7 +194,7 @@ return function(dt, size)
 
     -- Total height of the title/artist/progress/time group.
     local textStackHeight = titleHeight + titleArtistGap + artistHeight + artistProgressGap + progressBarHeight +
-                                progressTimeGap + timeHeight
+        progressTimeGap + timeHeight
 
     -- Anchor the stack just above the playback controls.
     local stackBottomGap = px(10)
@@ -213,7 +232,6 @@ return function(dt, size)
     local progress = 0
 
     if playing.trackPosition ~= -1 and playing.trackDuration ~= -1 and playing.trackDuration > 0 then
-
         progress = math.saturateN(playing.trackPosition / playing.trackDuration)
     end
 
@@ -230,7 +248,6 @@ return function(dt, size)
     -- Time display
 
     if playing.trackPosition ~= -1 and playing.trackDuration ~= -1 then
-
         local timeY = progressBarY + progressBarHeight + progressTimeGap
 
         ui.setCursor(vec2(progressBarX, timeY))
@@ -280,7 +297,7 @@ return function(dt, size)
         rgbm(1, 1, 1, 0.90), px(17))
 
     if touchscreen.iconButton(playing.isPlaying and ui.Icons.Pause or ui.Icons.Play, buttonSize,
-        rgbm(0.08, 0.08, 0.08, 1)) then
+            rgbm(0.08, 0.08, 0.08, 1)) then
         ac.mediaPlayPause()
 
         ------------------------------------------------------------
