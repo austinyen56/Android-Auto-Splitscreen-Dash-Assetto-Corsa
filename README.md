@@ -21,12 +21,13 @@
 1. Install the latest version of CSP. Must re-install after each CSP or CM update (More info below)
 
     - (Optional): Back up `assettocorsa/extension/lua/cars/android_auto` before installing if you are planning on staying on an older version of CSP
+2. Download this repo or download through [Overtake](https://www.overtake.gg/downloads/android-auto-splitscreen-dashboard.86200/)
 
-2. Extract the files manually and copy it into `assettocorsa/extension/`
+3. Extract the files manually and copy it into `assettocorsa/extension/`
 
-3. Choose a car with Android Auto and you should see the Dashboard icon.
+4. Choose a car with Android Auto and you should see the Dashboard icon.
 
-4. Click on the Dashboard icon, play any song from Chrome/ Spotify and have fun!
+5. Click on the Dashboard icon, play any song from Chrome/ Spotify and have fun!
 
 
 # Features
